@@ -74,7 +74,7 @@ async function finalizeCharacterCreation(userId, userState, character) {
 
 async function sendRaceOptions(channel, userId, character) {
   const raceMessage = await channel.send(
-    'Choose your race:\n1: Human :one:\n2: Elf :two:\n3: Dwarf :three:\n...'
+    'Choose your race:\n1: Human \n2: Elf \n3: Dwarf \n...'
   )
 
   const reactions = ['1️⃣', '2️⃣', '3️⃣']
@@ -100,7 +100,7 @@ async function sendRaceOptions(channel, userId, character) {
 
 async function sendElementOptions(channel, userId, character) {
   const elementMessage = await channel.send(
-    'Choose your element:\n1: Fire :one:\n2: Air :two:\n3: Water :three:\n4: Earth :four:'
+    'Choose your element:\n1: Fire \n2: Air \n3: Water \n4: Earth '
   )
 
   const reactions = ['1️⃣', '2️⃣', '3️⃣', '4️⃣']

@@ -1,40 +1,34 @@
 import { ChannelType } from 'discord.js'
-import { initializeApp } from 'firebase/app'
-import { getFirestore } from 'firebase/firestore'
-import { firebaseConfig } from '../firebaseConfig.js'
+import { initializeDatabase } from './services/firebaseService.js'
+
 import { handleMessage } from './messageHandler.js'
 
 export function initializeBot(client) {
-  const app = initializeApp(firebaseConfig)
-  const db = getFirestore(app)
+  const db = initializeDatabase()
 
   client.on('messageCreate', (message) => {
     handleMessage(message, db)
   })
 
   client.on('messageReactionAdd', async (reaction, user) => {
-    console.log('reaction', reaction)
-    if (user.bot) return // Ignore bot reactions
-
-    const message = reaction.message
-    if (!message.author || message.author.bot) return // Ensure message has an author and it's not a bot
-
-    // Check if the reaction is part of an ongoing character creation process
-    if (
-      message.channel.type === ChannelType.GuildPublicThread ||
-      message.channel.type === ChannelType.GuildPrivateThread
-    ) {
-      if (message.author.id === client.user.id) {
-        const character = new Character(user.id, db)
-        await handleCharacterCreationResponse(
-          message,
-          character,
-          reaction,
-          user
-        )
-      }
-    }
+    await handleReaction(reaction, user, db, client)
   })
 
   client.login(process.env.BOT_TOKEN)
+}
+async function handleReaction(reaction, user, db, client) {
+  if (user.bot) return // Ignore bot reactions
+
+  const message = reaction.message
+  if (!message.author || message.author.bot) return
+  // Check if the reaction is part of an ongoing character creation process
+  if (
+    message.channel.type === ChannelType.GuildPublicThread ||
+    message.channel.type === ChannelType.GuildPrivateThread
+  ) {
+    if (message.author.id === client.user.id) {
+      const character = new Character(user.id, db)
+      await handleCharacterCreationResponse(message, character, reaction, user)
+    }
+  }
 }

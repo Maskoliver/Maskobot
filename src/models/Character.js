@@ -74,7 +74,7 @@ export class Character {
   }
 }
 
-export function createHealthBar(currentHealth, maxHealth, size = 10) {
+export function createHealthBar(currentHealth, maxHealth, size = 14) {
   const healthEmoji = ':green_square:'
   const missingHealthEmoji = ':red_square:'
 
@@ -85,4 +85,14 @@ export function createHealthBar(currentHealth, maxHealth, size = 10) {
     healthEmoji.repeat(healthPoints) +
     missingHealthEmoji.repeat(missingHealthPoints)
   )
+}
+
+export function createXPBar(xp, totalXp, size = 14) {
+  const xpEmoji = ':yellow_square:'
+  const missingXPEmoji = ':white_large_square:'
+
+  const xpPoints = Math.round((xp / totalXp) * size)
+  const missingXPPoints = size - xpPoints
+
+  return xpEmoji.repeat(xpPoints) + missingXPEmoji.repeat(missingXPPoints)
 }

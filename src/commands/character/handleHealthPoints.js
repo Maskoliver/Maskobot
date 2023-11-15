@@ -1,4 +1,4 @@
-import { createHealthBar } from '../models/Character.js'
+import { createHealthBar } from '../../models/Character.js'
 
 export default async function handleHealthPoints(character, message) {
   try {
