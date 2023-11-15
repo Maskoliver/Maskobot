@@ -7,6 +7,8 @@ import commandFactory from './commands/utility/commandFactory.js'
 import { Character } from './models/Character.js'
 import { shouldIgnoreMessage } from './utils/messageUtils.js'
 
+const inventoryThreads = new Map()
+
 export async function handleMessage(message, db) {
   if (shouldIgnoreMessage(message)) return
 
@@ -24,10 +26,20 @@ export async function handleMessage(message, db) {
 }
 
 async function executeCommand(command, character, message, args) {
-  const handler = commandFactory.getHandler(command)
-  if (handler) {
+  const commandData = commandFactory.getCommandData(command)
+  if (commandData && commandData.category === 'inventory') {
+    const inventoryThreadId = inventoryThreads.get(character.charId)
+    if (!inventoryThreadId || message.channel.id !== inventoryThreadId) {
+      await message.reply(
+        'You can only use this command in your inventory thread.'
+      )
+      return
+    }
+  }
+
+  if (commandData && commandData.handler) {
     try {
-      await handler(character, message, args)
+      await commandData.handler(character, message, args, inventoryThreads)
     } catch (error) {
       await handleError(command, error, message)
     }

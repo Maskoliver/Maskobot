@@ -11,10 +11,28 @@ export default async function handleCharacterInfo(character, message) {
       charInfo.experience,
       charInfo.experienceToNextLevel
     )
+    let baseElementColor = 0xff4500 // default color
+    switch (charInfo.baseElement.toLowerCase()) {
+      case 'fire':
+        baseElementColor = 0xff4500
+        break
+      case 'water':
+        baseElementColor = 0x007fff
+        break
+      case 'earth':
+        baseElementColor = 0x8b4513
+        break
+      case 'air':
+        baseElementColor = 0x87ceeb
+        break
+    }
+    console.log('baseElementColor: ', baseElementColor)
+    console.log('charInfo.baseElement: ', charInfo.baseElement)
     const embed = new EmbedBuilder()
-      .setColor(0x0099ff) // EmbedBuilder uses a decimal color value
+
       .setTitle(`${charInfo.name} The ${charInfo.class}`)
       .setDescription(`${charInfo.race} - Level ${level}`)
+      .setColor(baseElementColor)
       .addFields([
         {
           name: `Health   ${currentHealth}/${maxHealth}`,

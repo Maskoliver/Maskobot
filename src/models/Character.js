@@ -1,3 +1,4 @@
+import { EmbedBuilder } from 'discord.js'
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore'
 import { Inventory } from './Inventory.js'
 
@@ -34,6 +35,42 @@ export class Character {
   async getLevel() {
     const charDoc = await this._getCharacterDoc()
     return charDoc.level
+  }
+
+  async addItemToInventory(itemId, quantity) {
+    await this.inventory.addItem(itemId, quantity)
+  }
+
+  async removeItemFromInventory(itemId, quantity) {
+    await this.inventory.removeItem(itemId, quantity)
+  }
+
+  // And methods to display the inventory:
+
+  async displayInventory(inventoryThread, charInfo) {
+    const items = await this.inventory.getInventoryList()
+    let fields = []
+    if (items.length === 0) {
+      fields.push({
+        name: ' ',
+        value: 'Your inventory is empty.'
+      })
+    } else {
+      fields = items.map((item) => {
+        return {
+          name: item.item.name,
+          value: `Quantity: ${item.quantity || '0'}` // Provide a default value
+        }
+      })
+    }
+    const embed = new EmbedBuilder()
+      .setTitle(`${charInfo.name} Inventory`)
+      .addFields(fields)
+      .setColor('#0099ff')
+      .setTimestamp()
+
+    // Send the embed to the Discord channel
+    await inventoryThread.send({ embeds: [embed] })
   }
 
   static getDefaultAttributes(name, race, baseElement) {

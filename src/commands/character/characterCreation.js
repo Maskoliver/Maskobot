@@ -1,3 +1,5 @@
+import { EmbedBuilder } from 'discord.js'
+
 let characterCreationStates = {}
 
 export async function startCharacterCreationProcess(uid, message) {
@@ -73,9 +75,14 @@ async function finalizeCharacterCreation(userId, userState, character) {
 }
 
 async function sendRaceOptions(channel, userId, character) {
-  const raceMessage = await channel.send(
-    'Choose your race:\n1: Human \n2: Elf \n3: Dwarf \n...'
-  )
+  const raceEmbed = new EmbedBuilder()
+    .setColor(0xffffff) // White or any other color you prefer
+    .setTitle('Choose Your Race')
+    .setDescription('\n1: Human\n2: Elf\n3: Dwarf')
+
+  const raceMessage = await channel.send({
+    embeds: [raceEmbed]
+  })
 
   const reactions = ['1️⃣', '2️⃣', '3️⃣']
   for (const reaction of reactions) {
@@ -99,9 +106,13 @@ async function sendRaceOptions(channel, userId, character) {
 }
 
 async function sendElementOptions(channel, userId, character) {
-  const elementMessage = await channel.send(
-    'Choose your element:\n1: Fire \n2: Air \n3: Water \n4: Earth '
-  )
+  const elementEmbed = new EmbedBuilder()
+    .setColor(0xffffff) // White or any other color you prefer
+    .setTitle('Choose Your Element')
+    .setDescription('\n1: Fire \n2: Air \n3: Water \n4: Earth')
+  const elementMessage = await channel.send({
+    embeds: [elementEmbed]
+  })
 
   const reactions = ['1️⃣', '2️⃣', '3️⃣', '4️⃣']
   for (const reaction of reactions) {
