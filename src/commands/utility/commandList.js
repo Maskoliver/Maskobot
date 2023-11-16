@@ -42,7 +42,7 @@ export const commandsList = [
     name: '!equip',
     description: 'Equip an item from your inventory',
     handler: handleEquipItem,
-    category: 'general'
+    category: 'inventory'
   }
 ]
 

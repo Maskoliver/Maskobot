@@ -1,26 +1,60 @@
-// In your handleInventory.js or similar file
+import { ChannelType, EmbedBuilder } from 'discord.js'
+
 export default async function handleInventory(character, message) {
   try {
-    // Create a private thread for inventory interaction
+    // Get the character information
     const charInfo = await character._getCharacterDoc()
+    if (message.client.inventoryThreads.has(character.charId)) {
+      const threadId = message.client.inventoryThreads.get(character.charId)
+      const thread = await message.channel.threads.fetch(threadId)
+      if (thread) {
+        await displayInventory(character, thread, charInfo)
+        return thread
+      }
+    }
 
+    // If it doesn't exist, create a new one
     const inventoryThread = await message.channel.threads.create({
       name: `${charInfo.name}'s Inventory`,
       autoArchiveDuration: 60,
-      reason: 'Private Inventory Interaction'
+      reason: 'Private Inventory Interaction',
+      type: ChannelType.PrivateThread
     })
 
-    // Notify the user
-    await message.channel.send(
-      `${charInfo.name}, your inventory has been opened in a private thread.`
-    )
-    inventoryThread.send(`${charInfo.name}, welcome to your inventory.`)
-    const inventoryEmbed = character.displayInventory(inventoryThread, charInfo)
+    // Ensure thread creation was successful
+    if (!inventoryThread) {
+      throw new Error('Failed to create inventory thread')
+    }
 
-    // Load and display the inventory in the thread
-    // ... (load and display inventory logic)
+    // Store the thread ID for future reference
+    message.client.inventoryThreads.set(character.charId, inventoryThread.id)
+    const threadLink = `https://discord.com/channels/${message.guild.id}/${inventoryThread.id}`
+    await message.channel.send(
+      `${charInfo.name}, your inventory has been opened in a private thread. Click here to view: ${threadLink}`
+    )
+    // Display the inventory in the thread
+    await displayInventory(character, inventoryThread, charInfo)
+
+    // Return the thread for further use if necessary
+    return inventoryThread
   } catch (error) {
     console.error('Error handling inventory: ', error)
     await message.channel.send('There was an error opening your inventory.')
+    return null
   }
+}
+
+async function displayInventory(character, thread, charInfo) {
+  const inventoryData = await character.getInventoryData()
+  const embed = new EmbedBuilder()
+    .setTitle(`${charInfo.name}'s Inventory`)
+    .addFields(
+      inventoryData.length > 0
+        ? inventoryData
+        : [{ name: '\u200B', value: 'Your inventory is currently empty.' }]
+    )
+    .setColor('#0099ff')
+    .setTimestamp()
+
+  await thread.send({ embeds: [embed] })
 }

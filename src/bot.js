@@ -5,9 +5,10 @@ import { handleMessage } from './messageHandler.js'
 
 export function initializeBot(client) {
   const db = initializeDatabase()
+  client.inventoryThreads = new Map()
 
   client.on('messageCreate', (message) => {
-    handleMessage(message, db)
+    handleMessage(message, db, client)
   })
 
   client.on('messageReactionAdd', async (reaction, user) => {
