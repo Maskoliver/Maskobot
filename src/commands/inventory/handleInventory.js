@@ -2,31 +2,26 @@ import { ChannelType, EmbedBuilder } from 'discord.js'
 
 export default async function handleInventory(character, message) {
   try {
-    // Get the character information
     const charInfo = await character._getCharacterDoc()
     if (message.client.inventoryThreads.has(character.charId)) {
       const threadId = message.client.inventoryThreads.get(character.charId)
       const thread = await message.channel.threads.fetch(threadId)
       if (thread) {
         await displayInventory(character, thread, charInfo)
+        console.log('Inventory thread already exists, displaying inventory')
         return thread
+      } else {
       }
     }
-
-    // If it doesn't exist, create a new one
     const inventoryThread = await message.channel.threads.create({
       name: `${charInfo.name}'s Inventory`,
       autoArchiveDuration: 60,
       reason: 'Private Inventory Interaction',
       type: ChannelType.PrivateThread
     })
-
-    // Ensure thread creation was successful
     if (!inventoryThread) {
       throw new Error('Failed to create inventory thread')
     }
-
-    // Store the thread ID for future reference
     message.client.inventoryThreads.set(character.charId, inventoryThread.id)
     const threadLink = `https://discord.com/channels/${message.guild.id}/${inventoryThread.id}`
     await message.channel.send(

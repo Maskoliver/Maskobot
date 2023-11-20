@@ -24,26 +24,40 @@ export async function handleMessage(message, db, client) {
   }
 }
 
-async function executeCommand(command, character, message, args, client) {
-  // Check if command is related to inventory and handle accordingly
-  if (command === '!inventory') {
-    // Check if an inventory thread already exists for the character
-    if (!client.inventoryThreads.has(character.charId)) {
-      const inventoryThread = await commandFactory.getHandler(command)(
-        character,
-        message,
-        args,
-        client
-      )
-      // If a thread was created, store it in the client's inventoryThreads map
-      if (inventoryThread) {
-        client.inventoryThreads.set(character.charId, inventoryThread.id)
-      }
-    }
-    return // Exit early to prevent further command processing
+async function handleInventoryCommand(character, message, client) {
+  if (message.channel.type === 12) {
+    await message.channel.send(
+      `The !inventory command cannot be used inside a thread. Please use it in the main channel.`
+    )
+    return
   }
+  if (client.inventoryThreads.has(character.charId)) {
+    const threadId = client.inventoryThreads.get(character.charId)
+    const thread = await message.channel.threads.fetch(threadId)
+    if (thread) {
+      const threadLink = `https://discord.com/channels/${message.guild.id}/${thread.id}`
+      await message.channel.send(
+        `Your inventory is already open in a private thread. Click here to view: ${threadLink}`
+      )
+      return
+    }
+  }
+  const inventoryThread = await commandFactory.getHandler('!inventory')(
+    character,
+    message,
+    [],
+    client
+  )
+  if (inventoryThread) {
+    client.inventoryThreads.set(character.charId, inventoryThread.id)
+  }
+}
 
-  // For other commands, check if they should be executed in the inventory thread
+async function executeCommand(command, character, message, args, client) {
+  if (command === '!inventory') {
+    await handleInventoryCommand(character, message, client)
+    return
+  }
   const commandData = commandFactory.getCommandData(command)
   if (commandData && commandData.category === 'inventory') {
     const inventoryThreadId = client.inventoryThreads.get(character.charId)
@@ -54,8 +68,6 @@ async function executeCommand(command, character, message, args, client) {
       return
     }
   }
-
-  // Execute the command if it has a handler
   if (commandData && commandData.handler) {
     try {
       await commandData.handler(character, message, args, client)
